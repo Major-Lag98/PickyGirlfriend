@@ -108,12 +108,14 @@
             const numSegments = restaurants.length;
             const arc = (2 * Math.PI) / numSegments;
             
-            // Normalize rotation to 0-2PI and account for top-center arrow (-90 deg)
-            let normalizedRotation = (currentRotation + (Math.PI / 2)) % (Math.PI * 2);
-            if (normalizedRotation < 0) normalizedRotation += Math.PI * 2;
-
-            // Math: The wheel rotates clockwise, so the winner index is inverse to the rotation
-            const index = (numSegments - Math.floor(normalizedRotation / arc)) % numSegments;
+            // Normalize rotation to 0-2PI
+            let normalizedRotation = currentRotation % (Math.PI * 2);
+            
+            // Arrow points upward at 3π/2 (in canvas coordinates where Y increases downward)
+            // Find which segment contains the arrow angle
+            let diff = (3 * Math.PI / 2 - normalizedRotation + Math.PI * 2) % (Math.PI * 2);
+            const index = Math.floor(diff / arc) % numSegments;
+            
             resultDiv.innerText = `You should eat at: ${restaurants[index]}!`;
         }
 
