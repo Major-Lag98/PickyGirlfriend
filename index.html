@@ -105,6 +105,7 @@
         });
 
         function determineWinner() {
+            console.log(restaurants);
             const numSegments = restaurants.length;
             const arc = (2 * Math.PI) / numSegments;
             
@@ -116,7 +117,8 @@
             let diff = (3 * Math.PI / 2 - normalizedRotation + Math.PI * 2) % (Math.PI * 2);
             const index = Math.floor(diff / arc) % numSegments;
             
-            resultDiv.innerText = `You should eat at: ${restaurants[index + 1]}!`;
+            // index + 1 because 
+            resultDiv.innerText = `You should eat at: ${restaurants[index]}!`;
         }
 
         loadRestaurants();
