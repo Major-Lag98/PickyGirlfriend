@@ -1,0 +1,21 @@
+[
+  { "name": "Taco Bell",       "tags": ["mexican", "fast-food"] },
+  { "name": "McDonalds",       "tags": ["burgers", "fast-food"] },
+  { "name": "Jack in the Box", "tags": ["burgers", "fast-food"] },
+  { "name": "Carls Jr",        "tags": ["burgers", "fast-food"] },
+  { "name": "Wendys",          "tags": ["burgers", "fast-food"] },
+  { "name": "Chick-Fil-A",     "tags": ["chicken", "fast-food"] },
+  { "name": "Gumbo Boys",      "tags": ["seafood"] },
+  { "name": "Pizza Y Pasta",   "tags": ["pizza"] },
+  { "name": "Little Caesers",  "tags": ["pizza"] },
+  { "name": "Shakeys",         "tags": ["pizza", "chicken"] },
+  { "name": "Popeyes",         "tags": ["chicken", "fast-food"] },
+  { "name": "Tu PanYou Pizza", "tags": ["pizza"] },
+  { "name": "Roll Call",       "tags": ["sushi"] },
+  { "name": "K Pasa",          "tags": ["mexican"] },
+  { "name": "Weinersnitchel",  "tags": ["hotdogs", "fast-food"] },
+  { "name": "Panda Express",   "tags": ["chinese", "fast-food"] },
+  { "name": "IHOP",            "tags": ["breakfast"] },
+  { "name": "Dennys",          "tags": ["breakfast"] },
+  { "name": "BHC Chicken",     "tags": ["chicken"] }
+]
