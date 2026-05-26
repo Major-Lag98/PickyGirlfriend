@@ -7,7 +7,7 @@
   { "name": "Chick-Fil-A",     "tags": ["chicken", "fast-food"] },
   { "name": "Gumbo Boys",      "tags": ["seafood"] },
   { "name": "Pizza Y Pasta",   "tags": ["pizza"] },
-  { "name": "Little Caesers",  "tags": ["pizza"] },
+  { "name": "Little Caesars",  "tags": ["pizza"] },
   { "name": "Shakeys",         "tags": ["pizza", "chicken"] },
   { "name": "Popeyes",         "tags": ["chicken", "fast-food"] },
   { "name": "Tu PanYou Pizza", "tags": ["pizza"] },
@@ -17,5 +17,6 @@
   { "name": "Panda Express",   "tags": ["chinese", "fast-food"] },
   { "name": "IHOP",            "tags": ["breakfast"] },
   { "name": "Dennys",          "tags": ["breakfast"] },
-  { "name": "BHC Chicken",     "tags": ["chicken"] }
+  { "name": "BHC Chicken",     "tags": ["chicken"] },
+  { "name": "Happy Taco",      "tags": ["mexican"] }
 ]

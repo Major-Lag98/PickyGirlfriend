@@ -22,7 +22,15 @@
         #filters h2 { margin: 20px 0 12px; font-size: 1.1rem; color: #2f3542; }
         #filters h2:first-child { margin-top: 0; }
         #filters label { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 1.1rem; color: #2f3542; cursor: pointer; text-transform: capitalize; }
-        #filters input { width: 18px; height: 18px; cursor: pointer; accent-color: #ff4757; }
+        #filters input[type=checkbox], #filters input[type=radio] { width: 18px; height: 18px; cursor: pointer; accent-color: #ff4757; }
+        /* Add-restaurant panel */
+        #add-panel { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 20px 24px; margin-top: 20px; min-width: 160px; }
+        #add-panel h2 { margin: 0 0 12px; font-size: 1.1rem; color: #2f3542; }
+        #add-panel input[type=text] { width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 1rem; border: 1px solid #ccd0d9; border-radius: 8px; margin-bottom: 10px; }
+        #add-panel button { width: 100%; padding: 10px; font-size: 1rem; cursor: pointer; background: #2ed573; color: white; border: none; border-radius: 8px; }
+        #add-panel button:active { transform: scale(0.97); }
+        #add-tags label { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 1rem; color: #2f3542; cursor: pointer; text-transform: capitalize; }
+        #add-status { font-size: 0.9rem; margin-top: 8px; min-height: 1.1rem; }
     </style>
 </head>
 <body>
@@ -34,16 +42,28 @@
     </div>
 
     <div id="wheel-view">
-        <div id="filters">
-            <h2>Categories</h2>
-            <div id="category-list"></div>
-            <h2>Type</h2>
-            <div id="type-list">
-                <label><input type="radio" name="food-type" value="any" checked>Any</label>
-                <label><input type="radio" name="food-type" value="fast-food">Fast food</label>
-                <label><input type="radio" name="food-type" value="sit-down">Take-out</label>
+        <div>
+            <div id="filters">
+                <h2>Categories</h2>
+                <div id="category-list"></div>
+                <h2>Type</h2>
+                <div id="type-list">
+                    <label><input type="radio" name="food-type" value="any" checked>Any</label>
+                    <label><input type="radio" name="food-type" value="fast-food">Fast food</label>
+                    <label><input type="radio" name="food-type" value="sit-down">Take-out</label>
+                </div>
+            </div>
+
+            <div id="add-panel">
+                <h2>Add a spot</h2>
+                <input type="text" id="add-name" placeholder="Restaurant name" autocomplete="off">
+                <div id="add-tags"></div>
+                <input type="text" id="add-newtags" placeholder="Other tags (comma separated)" autocomplete="off">
+                <button id="add-btn">Add to wheel</button>
+                <div id="add-status"></div>
             </div>
         </div>
+
         <div class="wheel-main">
             <h1>Where should we eat?</h1>
             <div class="container">
@@ -61,34 +81,39 @@
         const spinBtn = document.getElementById('spin-btn');
         const resultDiv = document.getElementById('result');
 
+        const API = '/api/restaurants';
         let allRestaurants = [];   // full list of { name, tags }
         let restaurants = [];      // names currently on the wheel (after filtering)
         let currentRotation = 0;
         let isSpinning = false;
 
-        // 1. Fetch and Parse JSON
+        // 1. Fetch the list from the Worker API (KV-backed)
         async function loadRestaurants() {
             try {
-                const response = await fetch('restaurants.json');
+                const response = await fetch(API);
                 allRestaurants = await response.json();
                 buildCategoryFilters();
+                buildAddTagOptions();
                 applyFilters();
             } catch (err) {
-                resultDiv.innerText = "Error loading restaurants.json!";
+                resultDiv.innerText = "Error loading restaurants!";
             }
         }
 
         // "fast-food" is its own axis (the Type radios), not a cuisine checkbox
         const TYPE_TAG = 'fast-food';
 
-        // Build one checkbox per unique cuisine tag, derived from the data
-        function buildCategoryFilters() {
-            const categories = [...new Set(allRestaurants.flatMap(r => r.tags))]
+        function cuisineTags() {
+            return [...new Set(allRestaurants.flatMap(r => r.tags))]
                 .filter(t => t !== TYPE_TAG)
                 .sort();
+        }
+
+        // Build one checkbox per unique cuisine tag, derived from the data
+        function buildCategoryFilters() {
             const list = document.getElementById('category-list');
             list.innerHTML = '';
-            categories.forEach(cat => {
+            cuisineTags().forEach(cat => {
                 const label = document.createElement('label');
                 const cb = document.createElement('input');
                 cb.type = 'checkbox';
@@ -164,7 +189,7 @@
             function animate(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                
+
                 // Ease out cubic function for smooth stop
                 const easeOut = 1 - Math.pow(1 - progress, 3);
                 currentRotation = targetRotation * easeOut;
@@ -184,17 +209,80 @@
         function determineWinner() {
             const numSegments = restaurants.length;
             const arc = (2 * Math.PI) / numSegments;
-            
+
             // Normalize rotation to 0-2PI
             let normalizedRotation = currentRotation % (Math.PI * 2);
-            
+
             // Arrow points upward at 3π/2 (in canvas coordinates where Y increases downward)
             // Find which segment contains the arrow angle
             let diff = (3 * Math.PI / 2 - normalizedRotation + Math.PI * 2) % (Math.PI * 2);
             const index = Math.floor(diff / arc) % numSegments;
-            
-            // index + 1 because 
+
             resultDiv.innerText = `You should eat at: ${restaurants[index]}!`;
+        }
+
+        // --- Add a restaurant ---------------------------------------------------
+
+        // Tag checkboxes for the add form: known cuisines + fast-food
+        function buildAddTagOptions() {
+            const wrap = document.getElementById('add-tags');
+            wrap.innerHTML = '';
+            [...cuisineTags(), TYPE_TAG].forEach(tag => {
+                const label = document.createElement('label');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.value = tag;
+                cb.className = 'add-tag';
+                label.appendChild(cb);
+                label.appendChild(document.createTextNode(tag));
+                wrap.appendChild(label);
+            });
+        }
+
+        const addStatus = document.getElementById('add-status');
+
+        document.getElementById('add-btn').addEventListener('click', async () => {
+            const name = document.getElementById('add-name').value.trim();
+            if (!name) { setStatus('Enter a name first.', '#ff4757'); return; }
+
+            const checked = [...document.querySelectorAll('.add-tag:checked')].map(cb => cb.value);
+            const extra = document.getElementById('add-newtags').value
+                .split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+            const tags = [...new Set([...checked, ...extra])];
+
+            setStatus('Adding…', '#2f3542');
+            try {
+                const headers = { 'content-type': 'application/json' };
+                const key = localStorage.getItem('adminKey');
+                if (key) headers['x-admin-key'] = key;
+
+                let res = await fetch(API, { method: 'POST', headers, body: JSON.stringify({ name, tags }) });
+
+                // If the server requires a key and we don't have a valid one, ask once.
+                if (res.status === 401) {
+                    const entered = prompt('Admin key required to add:');
+                    if (!entered) { setStatus('Cancelled.', '#ff4757'); return; }
+                    localStorage.setItem('adminKey', entered);
+                    headers['x-admin-key'] = entered;
+                    res = await fetch(API, { method: 'POST', headers, body: JSON.stringify({ name, tags }) });
+                }
+
+                const data = await res.json();
+                if (!res.ok) { setStatus(data.error || 'Failed to add.', '#ff4757'); return; }
+
+                setStatus(`Added ${name}!`, '#2ed573');
+                document.getElementById('add-name').value = '';
+                document.getElementById('add-newtags').value = '';
+                document.querySelectorAll('.add-tag:checked').forEach(cb => cb.checked = false);
+                await loadRestaurants(); // refresh wheel + filters with the new spot
+            } catch {
+                setStatus('Network error.', '#ff4757');
+            }
+        });
+
+        function setStatus(msg, color) {
+            addStatus.style.color = color;
+            addStatus.innerText = msg;
         }
 
         // Landing screen: each mode button reveals the wheel (all identical for now)
