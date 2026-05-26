@@ -81,7 +81,9 @@
         const spinBtn = document.getElementById('spin-btn');
         const resultDiv = document.getElementById('result');
 
-        const API = '/api/restaurants';
+        // Absolute Worker URL so the GitHub Pages frontend can reach the backend.
+        // (When the site is served by the Worker itself, this is just same-origin.)
+        const API = 'https://pickygirlfriend.aldensmith06.workers.dev/api/restaurants';
         let allRestaurants = [];   // full list of { name, tags }
         let restaurants = [];      // names currently on the wheel (after filtering)
         let currentRotation = 0;
